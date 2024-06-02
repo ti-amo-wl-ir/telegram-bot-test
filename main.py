@@ -7,9 +7,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from threading import Thread
 from datetime import datetime
-
+from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAFCFstIeh-l2LzZg3ydEeglVRbi_W1d4Co'
+TOKEN = '7401177865:AAEoWubu4eHVztbxdKm3WyYMMoNHmTgix4g'
 API_KEY = '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'
 API_URL = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&msg='
 DATA_FILE = 'bot_data.json'
@@ -383,3 +383,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+keep_alive()
