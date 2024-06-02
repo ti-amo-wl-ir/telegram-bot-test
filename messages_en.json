@@ -1,0 +1,13 @@
+{
+    "welcome": "Welcome! This bot is here to answer your questions.🌿",
+    "help": "Available commands:\n/start - Start using the bot☘️\n/help - Get help🌱\n/limits - View your current limits🍀\n/lang - Change language🍃\n/id For See your User Id🌿\n/premium To see the status of the account and the benefits of the premium🎄\n\nYou can ask 3 questions per minute and up to 50 questions per day.🌱",
+    "choose_language": "Please choose your language:🍃",
+    "language_changed": "Your language has been changed to {language}.🍃",
+    "processing": "Processing...🍀",
+    "daily_limit": "You have reached your daily request limit.🌿",
+    "minute_limit": "You have reached your limit. You can ask again in {remaining_time} seconds.🌱",
+    "limits": "Remaining minute limit: {remaining_minute}🌿\nRemaining daily limit: {remaining_daily}🍀\nDaily limit reset time: {hours} hours and {minutes} minutes☘️\nTotal questions asked so far: {total_questions_asked}🍃",
+    "error": "An error occurred while sending the request: {error}🍃",
+    "premium_true": "Your account is premium! 🌟\n\nPremium benefits:\n\nIncreased message limit per minute to 6.\nIncreased message limit per day to 100.\nFaster response from the bot.\nQuicker updates compared to other users.\n",
+    "premium_false": "Your account is not premium. ❌\n\nPremium benefits:\n\nIncreased message limit per minute to 6.\nIncreased message limit per day to 100.\nFaster response from the bot.\nQuicker updates compared to other users.\n\nIf You Wan't you Can Buy Premium Using this Link t.me/m/4-7WB4S3NjAx"
+}
