@@ -15,7 +15,7 @@ API_URL = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&m
 DATA_FILE = 'bot_data.json'
 ADMIN_USER_ID = 5694969786
 
-
+keep_alive()
 # تابع برای بارگذاری داده‌ها از فایل JSON
 def load_data():
     try:
@@ -383,4 +383,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-keep_alive()
