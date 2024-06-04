@@ -325,6 +325,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         if bot_data["user_limits"][str(user_id)] <= 0:
             remaining_time = int((60 - (current_time - bot_data["user_last_reset"][str(user_id)])))
             await update.message.reply_text(get_message(user_id, 'minute_limit', remaining_time=remaining_time))
+            return  # به جای ارسال پیام به API، اینجا باز می‌گردیم
 
         bot_data["user_limits"][str(user_id)] -= 1
         bot_data["user_daily_limit"][str(user_id)] -= 1
@@ -356,6 +357,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     except Exception as e:
         print(f"An error occurred: {e}")
         # Log the error if necessary
+
 
 
 
