@@ -80,9 +80,9 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     total_questions_asked = bot_data["total_questions_asked"].get(str(user_id), 0)
     remaining_daily = user_daily_limit.get(str(user_id), 100 if str(user_id) in bot_data["premium_users"] else 50)
     remaining_minute = max(0, user_limits.get(str(user_id), 6 if str(user_id) in bot_data["premium_users"] else 3))
-    daily_reset_timestamp = user_last_reset.get(str(user_id), current_time) + 86400
-    reset_time = datetime.fromtimestamp(daily_reset_timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    time_until_reset = daily_reset_timestamp - current_time
+
+    last_reset_time = user_last_reset.get(str(user_id), current_time)
+    time_until_reset = 86400 - (current_time - last_reset_time)
     hours, remainder = divmod(time_until_reset, 3600)
     minutes, _ = divmod(remainder, 60)
     
@@ -95,6 +95,7 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         minutes=int(minutes),
         total_questions_asked=total_questions_asked
     ))
+
 
 async def language_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     keyboard = [
@@ -278,9 +279,9 @@ def reset_limits():
                 bot_data["user_last_reset"][str(user_id)] = current_time
             elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
                 bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
-                bot_data["user_last_reset"][str(user_id)] = current_time
 
         save_data()
+
 
 def get_user_id_from_update(update: Update) -> str:
     return str(update.message.from_user.id)
