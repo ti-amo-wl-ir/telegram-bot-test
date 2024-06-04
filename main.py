@@ -85,7 +85,7 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     time_until_reset = 86400 - (current_time - last_reset_time)
     hours, remainder = divmod(time_until_reset, 3600)
     minutes, _ = divmod(remainder, 60)
-    
+
     await update.message.reply_text(get_message(
         user_id,
         'limits',
@@ -95,6 +95,7 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         minutes=int(minutes),
         total_questions_asked=total_questions_asked
     ))
+
 
 
 
@@ -286,6 +287,7 @@ def reset_limits():
 
 
 
+
 def get_user_id_from_update(update: Update) -> str:
     return str(update.message.from_user.id)
 
@@ -354,6 +356,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     except Exception as e:
         print(f"An error occurred: {e}")
         # Log the error if necessary
+
 
 
 
