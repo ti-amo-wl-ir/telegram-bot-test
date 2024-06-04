@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAGxRMu4Qi80wI2QUsOcCebL5XNH5qGqbgs'
+TOKEN = '7401177865:AAHG4e3YYPNTwcj6qZ7-R5iDPDGc_x3M1xg'
 API_KEY = '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'
 API_URL = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&msg='
 DATA_FILE = 'bot_data.json'
@@ -73,20 +73,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.message.from_user.id
+    current_time = time.time()
     user_limits = bot_data["user_limits"]
     user_daily_limit = bot_data["user_daily_limit"]
+    user_last_reset = bot_data["user_last_reset"]
     total_questions_asked = bot_data["total_questions_asked"].get(str(user_id), 0)
     remaining_daily = user_daily_limit.get(str(user_id), 100 if str(user_id) in bot_data["premium_users"] else 50)
     remaining_minute = max(0, user_limits.get(str(user_id), 6 if str(user_id) in bot_data["premium_users"] else 3))
 
-    last_reset = bot_data["user_last_reset"].get(str(user_id), time.time())
-    time_until_reset = 86400 - (time.time() - last_reset)
+    last_reset_time = user_last_reset.get(str(user_id), current_time)
+    time_until_reset = 86400 - (current_time - last_reset_time)
     hours, remainder = divmod(time_until_reset, 3600)
     minutes, _ = divmod(remainder, 60)
-
-    last_minute_reset = bot_data["user_last_minute_reset"].get(str(user_id), time.time())
-    time_until_minute_reset = 60 - (time.time() - last_minute_reset)
-
+    
     await update.message.reply_text(get_message(
         user_id,
         'limits',
@@ -94,11 +93,8 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         remaining_daily=remaining_daily,
         hours=int(hours),
         minutes=int(minutes),
-        total_questions_asked=total_questions_asked,
-        remaining_minute_reset=int(time_until_minute_reset)
+        total_questions_asked=total_questions_asked
     ))
-
-
 
 
 
@@ -275,22 +271,17 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 def reset_limits():
     while True:
+        time.sleep(60)
         current_time = time.time()
         for user_id in list(bot_data["user_limits"].keys()):
             if current_time - bot_data["user_last_reset"].get(str(user_id), current_time) >= 86400:
                 bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
                 bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
                 bot_data["user_last_reset"][str(user_id)] = current_time
+            elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
+                bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
 
         save_data()
-        time.sleep(60)
-
-def get_remaining_time_for_reset(user_id):
-    current_time = time.time()
-    last_reset_time = bot_data["user_last_reset"].get(str(user_id), current_time)
-    time_until_reset = 86400 - (current_time - last_reset_time)
-    return time_until_reset
-
 
 
 def get_user_id_from_update(update: Update) -> str:
@@ -302,48 +293,39 @@ import html
 async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         user_id = get_user_id_from_update(update)
-
+        
         # چک کردن برای وجود کاربر در لیست بن شده‌ها
         if str(user_id) in bot_data["banned_users"]:
             reason = bot_data["banned_users"][str(user_id)]
             await update.message.reply_text(f"Sorry, you are banned due to {reason} and cannot use the bot.⛔")
             return
-
+        
         current_time = time.time()
-
-        # تنظیمات اولیه برای کاربر
+        
         if str(user_id) not in bot_data["user_limits"]:
-            premium_user = str(user_id) in bot_data["premium_users"]
-            bot_data["user_limits"][str(user_id)] = 6 if premium_user else 3
-            bot_data["user_daily_limit"][str(user_id)] = 100 if premium_user else 50
+            bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
+            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
             bot_data["user_last_reset"][str(user_id)] = current_time
-            bot_data["user_last_minute_reset"][str(user_id)] = current_time
+            bot_data["last_minute_reset"][str(user_id)] = current_time
             bot_data["total_questions_asked"][str(user_id)] = 0
 
-        last_reset = bot_data["user_last_reset"].get(str(user_id), current_time)
-        last_minute_reset = bot_data["user_last_minute_reset"].get(str(user_id), current_time)
-        premium_user = str(user_id) in bot_data["premium_users"]
-        max_minute_limit = 6 if premium_user else 3
-
-        # ریست روزانه
-        if current_time - last_reset >= 86400:
-            bot_data["user_daily_limit"][str(user_id)] = 100 if premium_user else 50
-            bot_data["user_limits"][str(user_id)] = max_minute_limit
+        # ریست محدودیت‌های روزانه
+        if current_time - bot_data["user_last_reset"][str(user_id)] >= 86400:
+            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
+            bot_data["user_limits"][str(user_id)] = min(6, bot_data["user_daily_limit"][str(user_id)]) if str(user_id) in bot_data["premium_users"] else min(3, bot_data["user_daily_limit"][str(user_id)])
             bot_data["user_last_reset"][str(user_id)] = current_time
-            bot_data["user_last_minute_reset"][str(user_id)] = current_time
 
-        # ریست دقیقه‌ای
-        if current_time - last_minute_reset >= 60:
-            remaining_daily_limit = bot_data["user_daily_limit"][str(user_id)]
-            bot_data["user_limits"][str(user_id)] = min(max_minute_limit, remaining_daily_limit)
-            bot_data["user_last_minute_reset"][str(user_id)] = current_time
-
+        # ریست محدودیت‌های دقیقه‌ای
+        if current_time - bot_data["last_minute_reset"][str(user_id)] >= 60:
+            bot_data["user_limits"][str(user_id)] = min(6, bot_data["user_daily_limit"][str(user_id)]) if str(user_id) in bot_data["premium_users"] else min(3, bot_data["user_daily_limit"][str(user_id)])
+            bot_data["last_minute_reset"][str(user_id)] = current_time
+        
         if bot_data["user_daily_limit"][str(user_id)] <= 0:
             await update.message.reply_text(get_message(user_id, 'daily_limit'))
             return
-
+        
         if bot_data["user_limits"][str(user_id)] <= 0:
-            remaining_time = int(60 - (current_time - last_minute_reset))
+            remaining_time = int(60 - (current_time - bot_data["last_minute_reset"][str(user_id)]))
             await update.message.reply_text(get_message(user_id, 'minute_limit', remaining_time=remaining_time))
             return
 
@@ -361,7 +343,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             response = requests.get(f"{api_url_with_user_id}{msg}")
             response.raise_for_status()
             answer = response.text
-
+            
             # Escape special characters using html.escape
             answer = re.sub(r'([_[\]()~>#&<*+-=|({}.!])', r'\\\1', answer)
         except requests.RequestException as e:
@@ -377,7 +359,6 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     except Exception as e:
         print(f"An error occurred: {e}")
         # Log the error if necessary
-
 
 
 
