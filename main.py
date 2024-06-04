@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAEoWubu4eHVztbxdKm3WyYMMoNHmTgix4g'
+TOKEN = '7401177865:AAGgwm_9f1eO-GcT1oZ0Ef8nZsXGDh9CFVA'
 API_KEY = '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'
 API_URL = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&msg='
 DATA_FILE = 'bot_data.json'
@@ -80,12 +80,11 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     total_questions_asked = bot_data["total_questions_asked"].get(str(user_id), 0)
     remaining_daily = user_daily_limit.get(str(user_id), 100 if str(user_id) in bot_data["premium_users"] else 50)
     remaining_minute = max(0, user_limits.get(str(user_id), 6 if str(user_id) in bot_data["premium_users"] else 3))
-
-    last_reset_time = user_last_reset.get(str(user_id), current_time)
-    time_until_reset = 86400 - (current_time - last_reset_time)
+    daily_reset_timestamp = user_last_reset.get(str(user_id), current_time) + 86400
+    time_until_reset = daily_reset_timestamp - current_time
     hours, remainder = divmod(time_until_reset, 3600)
     minutes, _ = divmod(remainder, 60)
-
+    
     await update.message.reply_text(get_message(
         user_id,
         'limits',
@@ -95,6 +94,7 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         minutes=int(minutes),
         total_questions_asked=total_questions_asked
     ))
+
 
 
 
@@ -357,6 +357,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     except Exception as e:
         print(f"An error occurred: {e}")
         # Log the error if necessary
+
 
 
 
