@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAFrUj7h-ZZbhlqno4ROMwqB97V13LwGG6M'
+TOKEN = '7401177865:AAFHmwvw0fPv9lw2lYe5ps3wYve3l2AEQ1U'
 API_KEY = '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'
 API_URL = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&msg='
 DATA_FILE = 'bot_data.json'
@@ -78,8 +78,8 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     user_daily_limit = bot_data["user_daily_limit"]
     user_last_reset = bot_data["user_last_reset"]
     total_questions_asked = bot_data["total_questions_asked"].get(str(user_id), 0)
-    remaining_daily = user_daily_limit.get(str(user_id), 100 if str(user_id) in bot_data["premium_users"] else 50)
-    remaining_minute = max(0, user_limits.get(str(user_id), 6 if str(user_id) in bot_data["premium_users"] else 3))
+    remaining_daily = user_daily_limit.get(str(user_id), 100 if str(user_id) in bot_data["premium_users"] else 20)
+    remaining_minute = max(0, user_limits.get(str(user_id), 3 if str(user_id) in bot_data["premium_users"] else 1))
     daily_reset_timestamp = user_last_reset.get(str(user_id), current_time) + 86400
     reset_time = datetime.fromtimestamp(daily_reset_timestamp).strftime('%Y-%m-%d %H:%M:%S')
     time_until_reset = daily_reset_timestamp - current_time
