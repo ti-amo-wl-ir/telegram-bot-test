@@ -306,6 +306,8 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             bot_data["user_last_reset"][str(user_id)] = current_time
             bot_data["total_questions_asked"][str(user_id)] = 0
 
+        
+
         if current_time - bot_data["user_last_reset"][str(user_id)] >= 86400:
             bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
             bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
@@ -321,37 +323,37 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         if bot_data["user_limits"][str(user_id)] <= 0:
             remaining_time = int((60 - (current_time - bot_data["user_last_reset"][str(user_id)])))
             await update.message.reply_text(get_message(user_id, 'minute_limit', remaining_time=remaining_time))
+        else:
+            bot_data["user_limits"][str(user_id)] -= 1
+            bot_data["user_daily_limit"][str(user_id)] -= 1
+            bot_data["total_questions_asked"][str(user_id)] += 1
 
-        bot_data["user_limits"][str(user_id)] -= 1
-        bot_data["user_daily_limit"][str(user_id)] -= 1
-        bot_data["total_questions_asked"][str(user_id)] += 1
+            msg = update.message.text
+            await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
+            processing_message = await update.message.reply_text(get_message(str(user_id), 'processing'))
 
-        msg = update.message.text
-        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
-        processing_message = await update.message.reply_text(get_message(str(user_id), 'processing'))
+            try:
+                user_id_param = get_user_id_from_update(update)
+                api_url_with_user_id = f'http://127.0.0.1/?key={API_KEY}&userid={user_id_param}&msg='
+                response = requests.get(f"{api_url_with_user_id}{msg}")
+                response.raise_for_status()
+                answer = response.text
+                
+                # Escape special characters using html.escape
+                answer = re.sub(r'([_[\]()~>#&<*+-=|({}.!])', r'\\\1', answer)
+            except requests.RequestException as e:
+                answer = get_message(str(user_id), 'error', error=str(e))
 
-        try:
-            user_id_param = get_user_id_from_update(update)
-            api_url_with_user_id = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&userid={user_id_param}&msg='
-            response = requests.get(f"{api_url_with_user_id}{msg}")
-            response.raise_for_status()
-            answer = response.text
-            
-            # Escape special characters using html.escape
-            answer = re.sub(r'([_[\]()~>#&<*+-=|({}.!])', r'\\\1', answer)
-        except requests.RequestException as e:
-            answer = get_message(str(user_id), 'error', error=str(e))
-
-        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="cancel")
-        await context.bot.edit_message_text(
-            chat_id=processing_message.chat_id,
-            message_id=processing_message.message_id,
-            text=answer,
-            parse_mode='MarkdownV2'
-        )
+            await context.bot.send_chat_action(chat_id=update.message.chat_id, action="cancel")
+            await context.bot.edit_message_text(
+                chat_id=processing_message.chat_id,
+                message_id=processing_message.message_id,
+                text=answer,
+                parse_mode='MarkdownV2'
+            )
     except Exception as e:
         print(f"An error occurred: {e}")
-        # Log the error if necessary
+
 
 
 
