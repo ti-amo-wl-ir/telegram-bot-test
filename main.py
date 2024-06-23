@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAGJ2l0V2VpL6i3JBf0RB8dhB3s6SDMkhQo'
+TOKEN = '7401177865:AAErzLMStvmQrFydzFt2iAwS4LdOpBlHHNg'
 API_KEY = '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'
 API_URL = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&msg='
 DATA_FILE = 'bot_data.json'
