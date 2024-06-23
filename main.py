@@ -334,7 +334,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
             try:
                 user_id_param = get_user_id_from_update(update)
-                api_url_with_user_id = f'http://127.0.0.1/?key={API_KEY}&userid={user_id_param}&msg='
+                api_url_with_user_id = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&userid={user_id_param}&msg='
                 response = requests.get(f"{api_url_with_user_id}{msg}")
                 response.raise_for_status()
                 answer = response.text
