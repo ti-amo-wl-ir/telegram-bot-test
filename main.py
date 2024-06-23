@@ -273,11 +273,11 @@ def reset_limits():
         current_time = time.time()
         for user_id in list(bot_data["user_limits"].keys()):
             if current_time - bot_data["user_last_reset"].get(str(user_id), current_time) >= 86400:
-                bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
-                bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
+                bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 20
+                bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
                 bot_data["user_last_reset"][str(user_id)] = current_time
             elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
-                bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
+                bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
                 bot_data["user_last_reset"][str(user_id)] = current_time
 
         save_data()
@@ -301,19 +301,19 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         current_time = time.time()
         
         if str(user_id) not in bot_data["user_limits"]:
-            bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
-            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
+            bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
+            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 20
             bot_data["user_last_reset"][str(user_id)] = current_time
             bot_data["total_questions_asked"][str(user_id)] = 0
 
         
 
         if current_time - bot_data["user_last_reset"][str(user_id)] >= 86400:
-            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
-            bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
+            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 20
+            bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
             bot_data["user_last_reset"][str(user_id)] = current_time
         elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
-            bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
+            bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
             bot_data["user_last_reset"][str(user_id)] = current_time
         
         if bot_data["user_daily_limit"][str(user_id)] <= 0:
