@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAEYQEZhUE9s3lQa3DYCC6AABCDPKaGAJmM'
+TOKEN = '7401177865:AAExGDR1cB7jlRB-o3IJdMavleL55QKYmTE'
 API_KEY = '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'
 API_URL = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&msg='
 DATA_FILE = 'bot_data.json'
@@ -25,12 +25,15 @@ def load_data():
         data = {
             "user_limits": {},
             "user_daily_limit": {},
-            "user_last_reset": {},
             "user_language": {},
             "total_questions_asked": {},
             "premium_users": [],
             "vip_added_dates": {},
-            "banned_users": {}  # لیست کاربران بن شده به همراه دلیل بن
+            "banned_users": {},  # لیست کاربران بن شده به همراه دلیل بن
+            "user_minute_limit": {},  # لیمیت دقیقه‌ای   # لیمیت روزانه
+            "user_last_minute_reset": {},  # زمان ریست لیمیت دقیقه‌ای
+            "user_last_daily_reset": {},   # زمان ریست لیمیت روزانه
+
         }
 
     if "banned_users" not in data:
@@ -271,16 +274,16 @@ def reset_limits():
     while True:
         time.sleep(60)
         current_time = time.time()
-        for user_id in list(bot_data["user_limits"].keys()):
-            if current_time - bot_data["user_last_reset"].get(str(user_id), current_time) >= 86400:
+        for user_id in list(bot_data["user_minute_limit"].keys()):
+            if current_time - bot_data["user_last_daily_reset"].get(str(user_id), current_time) >= 86400:
                 bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
-                bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
-                bot_data["user_last_reset"][str(user_id)] = current_time
-            elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
-                bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
-                bot_data["user_last_reset"][str(user_id)] = current_time
+                bot_data["user_last_daily_reset"][str(user_id)] = current_time
+            elif current_time - bot_data["user_last_minute_reset"][str(user_id)] >= 60:
+                bot_data["user_minute_limit"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
+                bot_data["user_last_minute_reset"][str(user_id)] = current_time
 
         save_data()
+
 
 def get_user_id_from_update(update: Update) -> str:
     return str(update.message.from_user.id)
@@ -292,7 +295,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     try:
         user_id = get_user_id_from_update(update)
         
-        # چک کردن برای وجود کاربر در لیست بن شده‌ها
+        # بررسی برای وجود کاربر در لیست بن شده‌ها
         if str(user_id) in bot_data["banned_users"]:
             reason = bot_data["banned_users"][str(user_id)]
             await update.message.reply_text(f"Sorry, you are banned due to {reason} and cannot use the bot.⛔")
@@ -300,31 +303,34 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         
         current_time = time.time()
         
-        if str(user_id) not in bot_data["user_limits"]:
-            bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
-            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
-            bot_data["user_last_reset"][str(user_id)] = current_time
-            bot_data["total_questions_asked"][str(user_id)] = 0
+        # بررسی و تنظیم لیمیت دقیقه‌ای
+        if str(user_id) not in bot_data["user_minute_limit"]:
+            bot_data["user_minute_limit"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
+            bot_data["user_last_minute_reset"][str(user_id)] = current_time
 
-        
+        if current_time - bot_data["user_last_minute_reset"][str(user_id)] >= 60:
+            bot_data["user_minute_limit"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
+            bot_data["user_last_minute_reset"][str(user_id)] = current_time
 
-        if current_time - bot_data["user_last_reset"][str(user_id)] >= 86400:
+        # بررسی و تنظیم لیمیت روزانه
+        if str(user_id) not in bot_data["user_daily_limit"]:
             bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
-            bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
-            bot_data["user_last_reset"][str(user_id)] = current_time
-        elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
-            bot_data["user_limits"][str(user_id)] = 6 if str(user_id) in bot_data["premium_users"] else 3
-            bot_data["user_last_reset"][str(user_id)] = current_time
+            bot_data["user_last_daily_reset"][str(user_id)] = current_time
+
+        if current_time - bot_data["user_last_daily_reset"][str(user_id)] >= 86400:
+            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 50
+            bot_data["user_last_daily_reset"][str(user_id)] = current_time
         
+        # اعمال لیمیت‌ها
         if bot_data["user_daily_limit"][str(user_id)] <= 0:
             await update.message.reply_text(get_message(user_id, 'daily_limit'))
             return
         
-        if bot_data["user_limits"][str(user_id)] <= 0:
-            remaining_time = int((60 - (current_time - bot_data["user_last_reset"][str(user_id)])))
+        if bot_data["user_minute_limit"][str(user_id)] <= 0:
+            remaining_time = int((60 - (current_time - bot_data["user_last_minute_reset"][str(user_id)])))
             await update.message.reply_text(get_message(user_id, 'minute_limit', remaining_time=remaining_time))
         else:
-            bot_data["user_limits"][str(user_id)] -= 1
+            bot_data["user_minute_limit"][str(user_id)] -= 1
             bot_data["user_daily_limit"][str(user_id)] -= 1
             bot_data["total_questions_asked"][str(user_id)] += 1
 
@@ -353,8 +359,6 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             )
     except Exception as e:
         print(f"An error occurred: {e}")
-
-
 
 
 def main() -> None:
