@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAEM0lWk6iDkaZPCWfp7FrKhwlZG5jN7gYw'
+TOKEN = '7401177865:AAGzS4HUVAuTy-xX6hJ3iEkyBw6CsMu5__8'
 API_KEY = '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'
 API_URL = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?key={API_KEY}&msg='
 DATA_FILE = 'bot_data.json'
