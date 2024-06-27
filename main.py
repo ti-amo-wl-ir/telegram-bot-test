@@ -11,7 +11,7 @@ from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
 TOKEN = '7401177865:AAEM0lWk6iDkaZPCWfp7FrKhwlZG5jN7gYw'
 API_KEY = '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'
-API_URL = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&msg='
+API_URL = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?key={API_KEY}&msg='
 DATA_FILE = 'bot_data.json'
 ADMIN_USER_ID = 5694969786
 
@@ -80,7 +80,7 @@ async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     user_daily_limit = bot_data["user_daily_limit"]
     user_last_reset = bot_data["user_last_daily_reset"]
     total_questions_asked = bot_data["total_questions_asked"].get(str(user_id), 0)
-    remaining_daily = user_daily_limit.get(str(user_id), 100 if str(user_id) in bot_data["premium_users"] else 20)
+    remaining_daily = user_daily_limit.get(str(user_id), 60 if str(user_id) in bot_data["premium_users"] else 20)
     remaining_minute = max(0, user_limits.get(str(user_id), 3 if str(user_id) in bot_data["premium_users"] else 1))
     daily_reset_timestamp = user_last_reset.get(str(user_id), current_time) + 86400
     reset_time = datetime.fromtimestamp(daily_reset_timestamp).strftime('%Y-%m-%d %H:%M:%S')
@@ -275,7 +275,7 @@ def reset_limits():
         current_time = time.time()
         for user_id in list(bot_data["user_limits"].keys()):
             if current_time - bot_data["user_last_daily_reset"].get(str(user_id), current_time) >= 86400:
-                bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 20
+                bot_data["user_daily_limit"][str(user_id)] = 60 if str(user_id) in bot_data["premium_users"] else 20
                 bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
                 bot_data["user_last_daily_reset"][str(user_id)] = current_time
             elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
@@ -308,14 +308,14 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         
         if str(user_id) not in bot_data["user_limits"]:
             bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
-            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 20
+            bot_data["user_daily_limit"][str(user_id)] = 60 if str(user_id) in bot_data["premium_users"] else 20
             bot_data["user_last_reset"][str(user_id)] = current_time
             bot_data["user_last_daily_reset"][str(user_id)] = current_time
             bot_data["total_questions_asked"][str(user_id)] = 0
 
 
         if current_time - bot_data["user_last_daily_reset"][str(user_id)] >= 86400:
-            bot_data["user_daily_limit"][str(user_id)] = 100 if str(user_id) in bot_data["premium_users"] else 20
+            bot_data["user_daily_limit"][str(user_id)] = 60 if str(user_id) in bot_data["premium_users"] else 20
             bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
             bot_data["user_last_daily_reset"][str(user_id)] = current_time
         elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
@@ -340,7 +340,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
             try:
                 user_id_param = get_user_id_from_update(update)
-                api_url_with_user_id = f'https://api.wl-std.com/panel/assets/script/hallo.php?key={API_KEY}&userid={user_id_param}&msg='
+                api_url_with_user_id = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?key={API_KEY}&userid={user_id_param}&msg='
                 response = requests.get(f"{api_url_with_user_id}{msg}")
                 response.raise_for_status()
                 answer = response.text
