@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAEHPymRRYjlrlymEmdfwZxn49qrRFnSlek'
+TOKEN = '7401177865:AAHAZaMrN2aGxcOO57SI0CyFv_WtcfpzLUA'
 API_URL = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?&msg='
 DATA_FILE = 'bot_data.json'
 ADMIN_USER_ID = 5694969786
@@ -339,7 +339,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
             try:
                 user_id_param = get_user_id_from_update(update)
-                api_url_with_user_id = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?userid={user_id_param}&msg='
+                api_url_with_user_id = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?userid={user_id_param}&pass=ljkfkwevjfdhdwevjdhwvnhjgdshfghjsdvfwgtfvcuwyrvcsiuyrfwesvfsvfjhsvufv2wvfeywufecvduwqtucfuqewfc&msg='
                 response = requests.get(f"{api_url_with_user_id}{msg}")
                 response.raise_for_status()
                 answer = response.text
