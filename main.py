@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAHIrwHiov8oeJzwzqVzMkHetVmXgMbkcTM'
+TOKEN = '7401177865:AAEokNc5el_yB7ijxr4GBbjiJe3K5jnFTCs'
 API_URL = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?&msg='
 DATA_FILE = 'bot_data.json'
 ADMIN_USER_ID = 5694969786
@@ -345,7 +345,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 answer = response.text
                 
                 # Escape special characters using html.escape
-                answer = re.sub(r'([_[\]()~>#&<+-=|({}.!])', r'\\\1', answer)
+                answer = re.sub(r'([_[\]()~>#*&<+-=|({}.!])', r'\\\1', answer)
             except requests.RequestException as e:
                 answer = get_message(str(user_id), 'error', error=str(e))
 
@@ -364,6 +364,18 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 
+async def send_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    admin_user_id = update.message.from_user.id
+    if admin_user_id != ADMIN_USER_ID:
+        await update.message.reply_text("You do not have permission to use this command.")
+        return
+
+    try:
+        with open(DATA_FILE, 'rb') as file:
+            await context.bot.send_document(chat_id=admin_user_id, document=file)
+        await update.message.reply_text("Bot data file has been sent successfully.")
+    except FileNotFoundError:
+        await update.message.reply_text("Data file not found.")
 
 
 def main() -> None:
@@ -373,6 +385,7 @@ def main() -> None:
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("datadb", send_data))
     application.add_handler(CommandHandler("limits", limits_command))
     application.add_handler(CommandHandler("lang", language_command))
     application.add_handler(CommandHandler("addvip", add_vip))
