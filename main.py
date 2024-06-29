@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAGQxuV7Sx6jYQ2blYKVW2foQ6rcwbt4Afw'
+TOKEN = '7401177865:AAF6HpLuNRPQTZL-kHus3tjd1cy00IY0ai4'
 API_URL = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?&msg='
 DATA_FILE = 'bot_data.json'
 ADMIN_USER_ID = 5694969786
@@ -302,15 +302,16 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             reason = bot_data["banned_users"][str(user_id)]
             await update.message.reply_text(f"Sorry, you are banned due to {reason} and cannot use the bot.⛔️")
             return
-
+        
         current_time = time.time()
-
+        
         if str(user_id) not in bot_data["user_limits"]:
             bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
             bot_data["user_daily_limit"][str(user_id)] = 60 if str(user_id) in bot_data["premium_users"] else 20
             bot_data["user_last_reset"][str(user_id)] = current_time
             bot_data["user_last_daily_reset"][str(user_id)] = current_time
             bot_data["total_questions_asked"][str(user_id)] = 0
+
 
         if current_time - bot_data["user_last_daily_reset"][str(user_id)] >= 86400:
             bot_data["user_daily_limit"][str(user_id)] = 60 if str(user_id) in bot_data["premium_users"] else 20
@@ -319,11 +320,11 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         elif current_time - bot_data["user_last_reset"][str(user_id)] >= 60:
             bot_data["user_limits"][str(user_id)] = 3 if str(user_id) in bot_data["premium_users"] else 1
             bot_data["user_last_reset"][str(user_id)] = current_time
-
+        
         if bot_data["user_daily_limit"][str(user_id)] <= 0:
             await update.message.reply_text(get_message(user_id, 'daily_limit'))
             return
-
+        
         if bot_data["user_limits"][str(user_id)] <= 0:
             remaining_time = int((60 - (current_time - bot_data["user_last_reset"][str(user_id)])))
             await update.message.reply_text(get_message(user_id, 'minute_limit', remaining_time=remaining_time))
@@ -338,15 +339,13 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
             try:
                 user_id_param = get_user_id_from_update(update)
-                api_url_with_params = (
-                    f"http://tiamo.freehost.io/wl-ai-bot/ai.php?"
-                    f"userid={user_id_param}&pass=ljkfkwevjfdhdwevjdhwvnhjgdshfghjsdvfwgtfvcuwyrvcsiuyrfwesvfsvfjhsvufv2wvfeywufecvduwqtucfuqewfc&username={username}&msg={msg}"
-                )
-                response = requests.get(api_url_with_params)
+                api_url_with_user_id = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?userid={user_id_param}&username={username}&pass=ljkfkwevjfdhdwevjdhwvnhjgdshfghjsdvfwgtfvcuwyrvcsiuyrfwesvfsvfjhsvufv2wvfeywufecvduwqtucfuqewfc&msg='
+                response = requests.get(f"{api_url_with_user_id}{msg}")
                 response.raise_for_status()
                 answer = response.text
-
-                answer = re.sub(r'([_[\]()~>#&<+-=|({}.!])', r'\\\1', answer)
+                
+                # Escape special characters using html.escape
+                answer = re.sub(r'([_[\]()~>#*&<+-=|({}.!])', r'\\\1', answer)
             except requests.RequestException as e:
                 answer = get_message(str(user_id), 'error', error=str(e))
 
@@ -360,7 +359,6 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     except Exception as e:
         print(f"An error occurred: {e}")
-
 
 
 
