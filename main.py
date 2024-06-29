@@ -9,7 +9,7 @@ from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAHAZaMrN2aGxcOO57SI0CyFv_WtcfpzLUA'
+TOKEN = '7401177865:AAFAqzaKTbtAKWJIzje8iekYo5kLOl4Ts_w'
 API_URL = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?&msg='
 DATA_FILE = 'bot_data.json'
 ADMIN_USER_ID = 5694969786
@@ -345,7 +345,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 answer = response.text
                 
                 # Escape special characters using html.escape
-                answer = re.sub(r'([_[\]()~>#&<*+-=|({}.!])', r'\\\1', answer)
+                answer = re.sub(r'([_[\]()~>#&<+-=|({}.!])', r'\\\1', answer)
             except requests.RequestException as e:
                 answer = get_message(str(user_id), 'error', error=str(e))
 
