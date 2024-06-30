@@ -1,6 +1,6 @@
 {
     "welcome": "Welcome! This bot is here to answer your questions.🌿",
-    "help": "Available commands:\n/start - Start using the bot☘️\n/help - Get help🌱\n/limits - View your current limits🍀\n/lang - Change language🍃\n/id For See your User Id🌿\n/premium To see the status of the account and the benefits of the premium🎄\n\nYou can ask 3 questions per minute and up to 50 questions per day.🌱",
+    "help": "Available commands:\n/start - Start using the bot☘️\n/help - Get help🌱\n/limits - View your current limits🍀\n/lang - Change language🍃\n/id For See your User Id🌿\n/premium To see the status of the account and the benefits of the premium🎄",
     "choose_language": "Please choose your language:🍃",
     "language_changed": "Your language has been changed to {language}.🍃",
     "processing": "Processing...🍀",
