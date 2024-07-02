@@ -8,8 +8,11 @@ from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQu
 from threading import Thread
 from datetime import datetime
 from keep_alive import keep_alive
+from dotenv import load_dotenv
+import os
+load_dotenv()
 # تنظیمات و متغیرهای مورد نیاز
-TOKEN = '7401177865:AAFthSG8nBPlFyIcjjnS3SIFR0vZROz5lNw'
+TOKEN = os.getenv('TOKEN')
 API_URL = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?&msg='
 DATA_FILE = 'bot_data.json'
 ADMIN_USER_ID = 5694969786
