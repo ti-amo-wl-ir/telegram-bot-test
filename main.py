@@ -10,7 +10,6 @@ from datetime import datetime
 from keep_alive import keep_alive
 from dotenv import load_dotenv
 import os
-import subprocess
 load_dotenv()
 # تنظیمات و متغیرهای مورد نیاز
 TOKEN = os.getenv('TOKEN')
@@ -300,7 +299,7 @@ import html
 async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         user_id = get_user_id_from_update(update)
-        username = update.message.from_user.username or "unknown"
+        username = update.message.from_user.username or "null"
 
         if str(user_id) in bot_data["banned_users"]:
             reason = bot_data["banned_users"][str(user_id)]
@@ -365,38 +364,6 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         print(f"An error occurred: {e}")
 
 
-async def get_ping(host):
-    try:
-        result = subprocess.run(['ping', '-c', '4', host], capture_output=True, text=True)
-        output = result.stdout
-        avg_ping = re.search(r'avg = (\d+\.?\d*)', output)
-        if avg_ping:
-            return avg_ping.group(1) + " ms"
-        else:
-            return "Ping failed"
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_id = update.message.from_user.id
-    if user_id != ADMIN_USER_ID:
-        await update.message.reply_text("You do not have permission to use this command.")
-        return
-
-    await update.message.reply_text("Checking status, please wait...")
-
-    telegram_ping = await get_ping("api.telegram.org")
-    website_ping = await get_ping("wl-std.com")
-    google_ping = await get_ping("google.com")
-
-    status_message = (
-        f"Status:\n"
-        f"Telegram Ping: {telegram_ping}\n"
-        f"Website Ping (wl-std.com): {website_ping}\n"
-        f"Google Ping: {google_ping}"
-    )
-
-    await update.message.reply_text(status_message)
 
 
 async def send_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -421,7 +388,6 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("datadb", send_data))
-    application.add_handler(CommandHandler("status", status_command))
     application.add_handler(CommandHandler("limits", limits_command))
     application.add_handler(CommandHandler("lang", language_command))
     application.add_handler(CommandHandler("addvip", add_vip))
