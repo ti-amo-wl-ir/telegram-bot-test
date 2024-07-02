@@ -379,9 +379,7 @@ async def send_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except FileNotFoundError:
         await update.message.reply_text("Data file not found.")
 
-async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_id = update.message.from_user.id
-    await update.message.reply_text(get_message(user_id, 'unknown_command'))
+
 
 def main() -> None:
     print("Bot started!")
@@ -391,7 +389,6 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("datadb", send_data))
-    application.add_handler(MessageHandler(filters.COMMAND, unknown_command))
     application.add_handler(CommandHandler("limits", limits_command))
     application.add_handler(CommandHandler("lang", language_command))
     application.add_handler(CommandHandler("addvip", add_vip))

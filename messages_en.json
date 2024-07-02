@@ -9,6 +9,5 @@
     "limits": "Remaining minute limit: {remaining_minute}🌿\nRemaining daily limit: {remaining_daily}🍀\nDaily limit reset time: {hours} hours and {minutes} minutes☘️\nTotal questions asked so far: {total_questions_asked}🍃",
     "error": "An error occurred while sending the request: {error}🍃",
     "premium_true": "Your account is premium! 🌟\n\nPremium benefits:\n\nIncreased message limit per minute to 3.\nIncreased message limit per day to 60.\nFaster response from the bot.\nQuicker updates compared to other users.\n",
-    "premium_false": "Your account is not premium. ❌\n\nPremium benefits:\n\nIncreased message limit per minute to 3.\nIncreased message limit per day to 60.\nFaster response from the bot.\nQuicker updates compared to other users.\n\nIf You Wan't you Can Buy Premium Using this Link t.me/m/4-7WB4S3NjAx",
-    "unknown_command": "This command does not exist."
+    "premium_false": "Your account is not premium. ❌\n\nPremium benefits:\n\nIncreased message limit per minute to 3.\nIncreased message limit per day to 60.\nFaster response from the bot.\nQuicker updates compared to other users.\n\nIf You Wan't you Can Buy Premium Using this Link t.me/m/4-7WB4S3NjAx"
 }
