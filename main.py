@@ -10,6 +10,7 @@ from datetime import datetime
 from keep_alive import keep_alive
 from dotenv import load_dotenv
 import os
+from pymongo import MongoClient
 load_dotenv()
 # تنظیمات و متغیرهای مورد نیاز
 TOKEN = os.getenv('TOKEN')
@@ -18,34 +19,93 @@ DATA_FILE = 'bot_data.json'
 ADMIN_USER_ID = 5694969786
 
 keep_alive()
-# تابع برای بارگذاری داده‌ها از فایل JSON
+
+# اتصال به MongoDB
+client = MongoClient("mongodb+srv://pooriyayt:AulJRCPpIyTW5S70@cluster0.ukehq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client["mydatabase"]
+
+# مجموعه‌ها
+user_data_collection = db["user_data"]
+vip_added_dates_collection = db["vip_added_dates"]
+
+# تابع برای بارگذاری داده‌ها از MongoDB
 def load_data():
+    global bot_data
+    bot_data = {
+        "user_limits": {},
+        "user_daily_limit": {},
+        "user_last_reset": {},
+        "user_language": {},
+        "total_questions_asked": {},
+        "premium_users": [],
+        "vip_added_dates": {},
+        "user_last_daily_reset": {},
+        "banned_users": {}
+    }
+
     try:
-        with open(DATA_FILE, 'r') as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        data = {
-            "user_limits": {},
-            "user_daily_limit": {},
-            "user_last_reset": {},
-            "user_language": {},
-            "total_questions_asked": {},
-            "premium_users": [],
-            "vip_added_dates": {},
-            "user_last_daily_reset": {},
-            "banned_users": {}  
-        }
+        # بارگذاری اطلاعات کاربران
+        for row in user_data_collection.find():
+            user_id = str(row['user_id'])
+            bot_data["user_limits"][user_id] = row.get('minute_limit', 1)
+            bot_data["user_daily_limit"][user_id] = row.get('daily_limit', 20)
+            bot_data["user_last_reset"][user_id] = row.get('last_reset', datetime.now()).timestamp()
+            bot_data["user_language"][user_id] = row.get('language_code', 'en')
+            bot_data["total_questions_asked"][user_id] = row.get('questions_asked', 0)
+            bot_data["user_last_daily_reset"][user_id] = row.get('last_daily_reset', datetime.now()).timestamp()
+            if row.get('is_premium', False):
+                bot_data["premium_users"].append(user_id)
+            if row.get('ban_reason'):
+                bot_data["banned_users"][user_id] = row['ban_reason']
 
-    if "banned_users" not in data:
-        data["banned_users"] = {}
+        # بارگذاری تاریخ عضویت VIP کاربران
+        for row in vip_added_dates_collection.find():
+            bot_data["vip_added_dates"][str(row['user_id'])] = row['added_date'].strftime('%Y-%m-%d %H:%M:%S')
 
-    return data
+    except Exception as e:
+        print(f"Error loading data from MongoDB: {e}")
 
-
-# تابع برای ذخیره داده‌ها در فایل JSON
+# تابع برای ذخیره داده‌ها در MongoDB
 def save_data():
-    with open(DATA_FILE, 'w') as f:
-        json.dump(bot_data, f)
+    try:
+        # ذخیره یا بروزرسانی اطلاعات کاربران
+        for user_id, minute_limit in bot_data["user_limits"].items():
+            daily_limit = bot_data["user_daily_limit"].get(user_id, 20)
+            last_daily_reset = datetime.fromtimestamp(bot_data["user_last_daily_reset"].get(user_id, datetime.now().timestamp()))
+            last_reset = datetime.fromtimestamp(bot_data["user_last_reset"].get(user_id, datetime.now().timestamp()))
+            language_code = bot_data["user_language"].get(user_id, 'en')
+            questions_asked = bot_data["total_questions_asked"].get(user_id, 0)
+            is_premium = user_id in bot_data["premium_users"]
+            ban_reason = bot_data["banned_users"].get(user_id, None)
+
+            user_data_collection.update_one(
+                {"user_id": int(user_id)},
+                {"$set": {
+                    "daily_limit": daily_limit,
+                    "minute_limit": minute_limit,
+                    "last_daily_reset": last_daily_reset,
+                    "last_reset": last_reset,
+                    "questions_asked": questions_asked,
+                    "language_code": language_code,
+                    "is_premium": is_premium,
+                    "ban_reason": ban_reason
+                }},
+                upsert=True
+            )
+
+        # ذخیره یا بروزرسانی تاریخ عضویت VIP کاربران
+        for user_id, added_date in bot_data["vip_added_dates"].items():
+            vip_added_dates_collection.update_one(
+                {"user_id": int(user_id)},
+                {"$set": {
+                    "added_date": datetime.strptime(added_date, '%Y-%m-%d %H:%M:%S')
+                }},
+                upsert=True
+            )
+
+    except Exception as e:
+        print(f"Error saving data to MongoDB: {e}")
+
 
 # تابع برای بارگیری پیام‌ها از فایل JSON مربوطه
 def load_messages(language_code):
@@ -62,7 +122,7 @@ def get_message(user_id, key, **kwargs):
     return messages.get(key, key).format(**kwargs)
 
 # در بخش اصلی برنامه، ابتدا داده‌ها را بارگذاری می‌کنیم
-bot_data = load_data()
+load_data()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     keyboard = [
