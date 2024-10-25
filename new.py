@@ -255,7 +255,7 @@ async def vip_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     vip_list_text = "VIP Users:\n"
     for vip_user_id in bot_data["premium_users"]:
         remaining_days = calculate_remaining_days(vip_user_id)
-        vip_list_text += f"- User ID: <code>{vip_user_id}</code>, Remaining Days: {remaining_days}\n"
+        vip_list_text += f"- User ID: ```{vip_user_id}```, Remaining Days: {remaining_days}\n"
 
     await update.message.reply_text(vip_list_text, parse_mode='HTML')
 
@@ -328,7 +328,7 @@ async def ban_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def get_user_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.message.from_user.id
-    await update.message.reply_text(f"Your user ID is: ```{user_id}```", parse_mode='HTML')
+    await update.message.reply_text(f"Your user ID is: ```{user_id}-bale```", parse_mode='HTML')
 
 
 async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -439,7 +439,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             processing_message_id = processing_message.message_id
 
             try:
-                api_url_with_user_id = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?userid={user_id}&username={username}&pass=ljkfkwevjfdhdwevjdhwvnhjgdshfghjsdvfwgtfvcuwyrvcsiuyrfwesvfsvfjhsvufv2wvfeywufecvduwqtucfuqewfc&msg='
+                api_url_with_user_id = f'http://tiamo.freehost.io/wl-ai-bot/ai.php?userid={user_id}-bale&username={username}&pass=ljkfkwevjfdhdwevjdhwvnhjgdshfghjsdvfwgtfvcuwyrvcsiuyrfwesvfsvfjhsvufv2wvfeywufecvduwqtucfuqewfc&msg='
                 response = requests.get(f"{api_url_with_user_id}{msg}")
                 response.raise_for_status()
                 answer = response.text
