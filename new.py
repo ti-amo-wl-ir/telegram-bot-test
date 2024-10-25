@@ -11,6 +11,7 @@ from keep_alive import keep_alive
 from dotenv import load_dotenv
 import os
 from pymongo import MongoClient
+from threading import Timer
 load_dotenv()
 # تنظیمات و متغیرهای مورد نیاز
 TOKEN = os.getenv('TOKEN')
@@ -134,6 +135,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.message.reply_text(get_message(update.message.from_user.id, 'help'))
 
 async def limits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data() 
     user_id = update.message.from_user.id
     current_time = time.time()
     user_limits = bot_data["user_limits"]
@@ -182,6 +184,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def add_vip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data() 
     user_id = update.message.from_user.id
     if user_id != ADMIN_USER_ID:
         await update.message.reply_text("You do not have permission to use this command.")
@@ -222,6 +225,7 @@ async def send_congratulations_message(context: ContextTypes.DEFAULT_TYPE, user_
     await context.bot.send_message(chat_id=user_id, text=message)
 
 async def remove_vip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data() 
     admin_user_id = update.message.from_user.id
     if admin_user_id != ADMIN_USER_ID:
         await update.message.reply_text("You do not have permission to use this command.")
@@ -242,6 +246,7 @@ async def remove_vip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text(f"User {vip_user_id} is not in VIP list.")
 
 async def vip_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data() 
     admin_user_id = update.message.from_user.id
     if admin_user_id != ADMIN_USER_ID:
         await update.message.reply_text("You do not have permission to use this command.")
@@ -309,6 +314,7 @@ async def remove_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text(f"User {ban_user_id} is not currently banned.")
 
 async def ban_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data() 
     admin_user_id = update.message.from_user.id
     if admin_user_id != ADMIN_USER_ID:
         await update.message.reply_text("You do not have permission to use this command.")
@@ -368,9 +374,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             command = msg.split()[0][1:]  # حذف کاراکتر / و دریافت کامند
 
             # دستورات مدیریتی
-            if command == 'datadb':
-                await send_data(update, context)
-            elif command == 'viplist':
+            if command == 'viplist':
                 await vip_list(update, context)
             elif command == 'banlist':
                 await ban_list(update, context)
@@ -460,29 +464,22 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 
-async def send_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    admin_user_id = update.message.from_user.id
-    if admin_user_id != ADMIN_USER_ID:
-        await update.message.reply_text("You do not have permission to use this command.")
-        return
 
-    try:
-        with open(DATA_FILE, 'rb') as file:
-            await context.bot.send_document(chat_id=admin_user_id, document=file)
-        await update.message.reply_text("Bot data file has been sent successfully.")
-    except FileNotFoundError:
-        await update.message.reply_text("Data file not found.")
+def refresh_data_periodically():
+    load_data()  # داده‌ها از دیتابیس خوانده می‌شود
+    Timer(60, refresh_data_periodically).start()  # هر ۶۰ ثانیه یک بار فراخوانی می‌شود
+
+# در بخش main این تابع را صدا بزنید تا در پس‌زمینه اجرا شود
 
 
 
 def main() -> None:
     print("Bot started!")
-
+    
     application = Application.builder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("datadb", send_data))
     application.add_handler(CommandHandler("limits", limits_command))
     application.add_handler(CommandHandler("lang", language_command))
     application.add_handler(CommandHandler("addvip", add_vip))
@@ -499,8 +496,9 @@ def main() -> None:
     reset_thread = Thread(target=reset_limits)
     reset_thread.daemon = True
     reset_thread.start()
-
+    
     application.run_polling()
 
 if __name__ == '__main__':
     main()
+    refresh_data_periodically()
