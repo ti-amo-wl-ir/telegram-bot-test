@@ -406,7 +406,7 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             bot_data["user_limits"][str(user_id)] -= 1
             bot_data["user_daily_limit"][str(user_id)] -= 1
             bot_data["total_questions_asked"][str(user_id)] += 1
-
+            save_data()
             msg = update.message.text
             await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
             processing_message = await update.message.reply_text(get_message(str(user_id), 'processing'))
