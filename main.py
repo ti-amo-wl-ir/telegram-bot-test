@@ -333,6 +333,7 @@ async def get_user_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data()
     user_id = update.message.from_user.id
     if str(user_id) in bot_data["premium_users"]:
         await update.message.reply_text(get_message(user_id, 'premium_true'))
@@ -342,6 +343,7 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 def reset_limits():
     while True:
         time.sleep(60)
+        load_data()
         current_time = time.time()
         for user_id in list(bot_data["user_limits"].keys()):
             if current_time - bot_data["user_last_daily_reset"].get(str(user_id), current_time) >= 86400:
@@ -366,6 +368,7 @@ import html
 
 async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
+        load_data()
         user_id = get_user_id_from_update(update)
         username = update.message.from_user.username or "null"
 

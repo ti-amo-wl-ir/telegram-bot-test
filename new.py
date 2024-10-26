@@ -255,7 +255,7 @@ async def vip_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     vip_list_text = "VIP Users:\n"
     for vip_user_id in bot_data["premium_users"]:
         remaining_days = calculate_remaining_days(vip_user_id)
-        vip_list_text += f"- User ID: ```{vip_user_id}```, Remaining Days: {remaining_days}\n"
+        vip_list_text += f"- User ID: {vip_user_id}, Remaining Days: {remaining_days}\n"
 
     await update.message.reply_text(vip_list_text, parse_mode='HTML')
 
@@ -273,6 +273,7 @@ def calculate_remaining_days(user_id):
     return remaining_days if remaining_days >= 0 else 0
 
 async def add_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data()
     user_id = update.message.from_user.id
     if user_id != ADMIN_USER_ID:
         await update.message.reply_text("You do not have permission to use this command.")
@@ -296,6 +297,7 @@ async def add_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
 
 async def remove_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data()
     user_id = update.message.from_user.id
     if user_id != ADMIN_USER_ID:
         await update.message.reply_text("You do not have permission to use this command.")
@@ -332,6 +334,7 @@ async def get_user_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    load_data()
     user_id = update.message.from_user.id
     if str(user_id) in bot_data["premium_users"]:
         await update.message.reply_text(get_message(user_id, 'premium_true'))
@@ -341,6 +344,7 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 def reset_limits():
     while True:
         time.sleep(60)
+        load_data()
         current_time = time.time()
         for user_id in list(bot_data["user_limits"].keys()):
             if current_time - bot_data["user_last_daily_reset"].get(str(user_id), current_time) >= 86400:
@@ -394,7 +398,8 @@ async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                     await get_user_id(update, context)
 
             return  # از ارسال پیام به API جلوگیری می‌شود
-
+        
+        load_data()
         # بررسی بن بودن کاربر
         if str(user_id) in bot_data["banned_users"]:
             reason = bot_data["banned_users"][str(user_id)]
